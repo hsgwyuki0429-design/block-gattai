@@ -2,51 +2,45 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f5ef">
-  <meta name="description" content="同じ数字を、ぴたっと合体。くっついたら離れない、新感覚のスライドパズル。空きマスを使って、すべてのペアをつなげよう。">
-  <title>block gattai — ぴたっと、ひとつに。</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#edf1e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="同じ数字を合体させよう。くっついたら離れない、一画面で遊べるスライドパズル。">
+  <title>block gattai</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./src/app.js"></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="brand" href="./" aria-label="block gattai ホーム"><span class="brand-mark" aria-hidden="true">▰</span>block<span class="brand-light">gattai</span><span class="brand-dot">.</span></a>
-    <span class="header-note">A LITTLE PUZZLE, A LITTLE CONNECTION.</span>
-    <button class="help-button" id="help-open"><span aria-hidden="true">?</span> 遊び方</button>
-  </header>
-  <main>
-    <aside class="intro">
-      <p class="eyebrow"><span></span> THE STICK-TOGETHER PUZZLE</p>
-      <h1>ぴたっと、<br>ひとつに<span class="orange">。</span></h1>
-      <p class="intro-copy">同じ数字を、となり同士に。<br>くっついたら、もう離れない。<br>小さな一手で、全部をつなごう。</p>
-      <div class="rule-demo" aria-hidden="true"><span class="mini-block coral">1</span><span class="demo-arrow">→</span><span class="mini-pair"><span>1</span><span>1</span></span><span class="demo-spark">✳</span></div>
-      <p class="demo-caption">となり合うと、自動で合体！</p>
-      <div class="difficulty-section">
-        <h2 class="field-label">難易度をえらぶ <span>DIFFICULTY</span></h2>
-        <div class="difficulty-options" role="group" aria-label="難易度">
-          <button data-difficulty="easy"><span>やさしい</span><small>空き 3 マス</small><span class="difficulty-dot">●</span></button>
-          <button data-difficulty="normal" class="active"><span>ふつう</span><small>空き 2 マス</small><span class="difficulty-dot">●</span></button>
-          <button data-difficulty="hard"><span>むずかしい</span><small>空き 1 マス</small><span class="difficulty-dot">●</span></button>
-        </div>
-      </div>
-      <div class="little-note"><span aria-hidden="true">↳</span><p>合体する順番も、だいじ。<br>行きづまったら、一手戻してみよう。</p></div>
-    </aside>
+  <main class="game-shell">
+    <header class="game-header">
+      <button id="stages-open" class="icon-button" aria-label="ステージ・難易度を選ぶ"><span aria-hidden="true">▦</span></button>
+      <h1>block <span>gattai</span><b>.</b></h1>
+      <button id="help-open" class="icon-button" aria-label="遊び方">?</button>
+    </header>
     <section class="game" aria-label="パズル">
-      <div class="game-topline"><div><span class="eyebrow" id="level-label">NORMAL / STAGE 01</span><h2 id="stage-title">つながる、はじまり。</h2></div><span class="board-spec" id="board-spec">4 × 3</span></div>
-      <div class="game-card">
-        <div class="stats"><div class="pair-stat"><span class="stat-label">合体したペア</span><strong><span id="pairs">0</span><span class="stat-total"> / <span id="total-pairs">5</span></span><span class="stat-unit">ペア</span></strong></div><div class="pair-progress" id="pair-progress" aria-hidden="true"></div><div class="moves-stat"><span class="stat-label">手数</span><strong id="moves">00</strong></div></div>
-        <div class="board-shell"><div id="board" class="board" role="group" aria-label="ゲーム盤面"></div></div>
-        <div class="board-instruction"><span class="instruction-dot"></span><span id="instruction" role="status" aria-live="polite">ブロックを選んで、空きマスへ動かそう</span></div>
-        <div class="game-controls"><button id="undo" class="control-button" disabled><span aria-hidden="true">↶</span> 一手戻す</button><button id="reset" class="control-button"><span aria-hidden="true">↻</span> やり直す</button><button id="hint" class="control-button hint-button"><span aria-hidden="true">✧</span> ヒント</button></div>
-        <div class="win-panel" id="win-panel" hidden><span class="win-icon" aria-hidden="true">✳</span><p class="eyebrow">ALL TOGETHER!</p><h3>みんな、ぴたっと。</h3><p id="win-detail"></p><button id="next-level" class="primary-button">次のステージへ <span aria-hidden="true">→</span></button><button id="win-close" class="text-button">できあがった盤面を見る</button></div>
+      <div class="hud">
+        <button id="level-open" class="level-button" aria-label="ステージ・難易度を変更"><span id="level-label">ふつう</span><strong>STAGE <span id="stage-number">01</span><span class="chevron">⌄</span></strong></button>
+        <div class="pair-stat"><span class="stat-label">合体</span><strong><span id="pairs">0</span><span class="stat-total"> / <span id="total-pairs">5</span></span></strong><div class="pair-progress" id="pair-progress" aria-hidden="true"></div></div>
+        <div class="moves-stat"><span class="stat-label">手数</span><strong id="moves">00</strong></div>
       </div>
-      <div class="below-board"><span>タップで選択 → 矢印で移動 <span class="desktop-hint">／ スワイプもOK</span></span><div class="direction-pad" role="group" aria-label="選択したブロックを移動"><button data-direction="left" aria-label="左に移動">←</button><button data-direction="up" aria-label="上に移動">↑</button><button data-direction="down" aria-label="下に移動">↓</button><button data-direction="right" aria-label="右に移動">→</button></div></div>
-      <div class="stage-selector"><span class="field-label">ステージ</span><div id="stages" role="group" aria-label="ステージを選択"></div><span id="stage-count">01 / 08</span></div>
+      <div class="board-area"><div class="board-shell"><div id="board" class="board" role="group" aria-label="ゲーム盤面"></div></div></div>
+      <div class="board-instruction"><span id="instruction" role="status" aria-live="polite">ブロックをスワイプして動かそう</span></div>
+      <div class="direction-pad" role="group" aria-label="選択したブロックを移動"><button data-direction="left" aria-label="左に移動">←</button><button data-direction="up" aria-label="上に移動">↑</button><button data-direction="down" aria-label="下に移動">↓</button><button data-direction="right" aria-label="右に移動">→</button></div>
+      <div class="game-controls"><button id="undo" class="control-button" disabled><span aria-hidden="true">↶</span><span>一手戻す</span></button><button id="reset" class="control-button"><span aria-hidden="true">↻</span><span>やり直す</span></button><button id="hint" class="control-button hint-button"><span aria-hidden="true">✧</span><span>ヒント</span></button></div>
+      <div class="win-panel" id="win-panel" hidden role="dialog" aria-modal="true" aria-labelledby="win-title"><span class="win-icon" aria-hidden="true">✳</span><p class="eyebrow">STAGE CLEAR!</p><h2 id="win-title">みんな、ぴたっと。</h2><p id="win-detail"></p><button id="next-level" class="primary-button">次のステージへ <span aria-hidden="true">→</span></button><button id="win-close" class="text-button">盤面を見る</button></div>
     </section>
   </main>
-  <footer><span>くっつくって、ちょっと気持ちいい。</span><span>BLOCK GATTAI <span class="footer-star">✳</span> SLIDE. MATCH. STICK.</span></footer>
-  <dialog id="help-dialog" aria-labelledby="help-title"><button id="help-close" class="dialog-close" aria-label="遊び方を閉じる">×</button><p class="eyebrow">HOW TO PLAY</p><h2 id="help-title">全部のペアを、ひとつに。</h2><ol class="rules"><li><strong>空いているマスへ動かす</strong><p>ブロックを選び、画面の矢印かキーボードの矢印キーで1マス移動。ブロックのスワイプ・ドラッグでも動かせます。</p></li><li><strong>同じ数字がとなり合うと合体</strong><p>上下左右に接すると自動でくっつきます。斜めは合体しません。数字と色は、どちらもペアの目印です。</p></li><li><strong>合体したら、ずっと一緒</strong><p>2マスの形のまま動きます。分離・回転はできません。移動先に十分な空きが必要です。</p></li><li><strong>全部くっついたらクリア！</strong><p>順番によっては行きづまることも。「一手戻す」や「やり直す」は、何度でも使えます。</p></li></ol><button class="primary-button" id="help-play">さっそく遊ぶ <span>→</span></button></dialog>
+  <dialog id="stages-dialog" aria-labelledby="stages-title">
+    <button id="stages-close" class="dialog-close icon-button" aria-label="ステージ選択を閉じる">×</button>
+    <p class="eyebrow">LEVEL SELECT</p><h2 id="stages-title">どれで遊ぶ？</h2>
+    <div class="difficulty-options" role="group" aria-label="難易度"><button data-difficulty="easy"><strong>やさしい</strong><small>空き3マス</small></button><button data-difficulty="normal"><strong>ふつう</strong><small>空き2マス</small></button><button data-difficulty="hard"><strong>むずかしい</strong><small>空き1マス</small></button></div>
+    <div class="stage-caption"><span id="stage-title"></span><span id="board-spec"></span></div>
+    <div id="stages" role="group" aria-label="ステージを選択"></div>
+    <div class="stage-footer"><span>✓ クリア済み</span><span id="stage-count">01 / 08</span></div>
+    <button id="stages-play" class="primary-button">ゲームに戻る <span>→</span></button>
+  </dialog>
+  <dialog id="help-dialog" aria-labelledby="help-title"><button id="help-close" class="dialog-close icon-button" aria-label="遊び方を閉じる">×</button><p class="eyebrow">HOW TO PLAY</p><h2 id="help-title">同じ数字を、合体！</h2><ol class="rules"><li><strong>空きマスにスワイプ</strong><p>上下左右に1マス移動。ブロックをタップして下の矢印でも動かせます。</p></li><li><strong>となり合うと、ぴたっ</strong><p>同じ数字が上下左右に接すると合体。ペアは離れず、2マス一緒に動きます。回転はできません。</p></li><li><strong>全部くっつけたらクリア</strong><p>行きづまったら「一手戻す」。迷ったら「ヒント」を使ってみよう。</p></li></ol><button class="primary-button" id="help-play">ゲームに戻る <span>→</span></button></dialog>
 </body>
 </html>

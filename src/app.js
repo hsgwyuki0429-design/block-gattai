@@ -13,13 +13,15 @@ const boardEl = $('#board');
 function say(message) { $('#instruction').textContent = message; }
 function cancelHint() { hintId++; worker?.terminate(); worker = null; clearTimeout(hintTimer); $('#hint').disabled = false; $('#hint').innerHTML = '<span aria-hidden="true">✧</span> ヒント'; hinted = null; }
 function loadLevel(nextDifficulty = difficulty, nextIndex = levelIndex) {
+  setWinInert(false);
   cancelHint(); difficulty = nextDifficulty; levelIndex = nextIndex; board = level().board.slice(); history = []; selected = null;
   $('#win-panel').hidden = true;
-  render(); say('ブロックを選んで、空きマスへ動かそう');
+  render(); say('ブロックをスワイプ、または選んで矢印で移動');
 }
 function render() {
   const w = width(), h = board.length / w, joined = pairCount(board, w), total = board.filter(Boolean).length / 2;
   boardEl.style.setProperty('--cols', w); boardEl.style.setProperty('--rows', h);
+  $('.game').style.setProperty('--aspect', w / h);
   boardEl.replaceChildren();
   for (let i = 0; i < board.length; i++) { const cell = document.createElement('div'); cell.className = 'cell'; cell.setAttribute('aria-hidden', 'true'); boardEl.append(cell); }
   const allGroups = groups(board, w);
@@ -45,12 +47,13 @@ function render() {
   $('#pairs').textContent = joined; $('#total-pairs').textContent = total; $('#moves').textContent = String(history.length).padStart(2, '0');
   $('#pair-progress').innerHTML = Array.from({length:total}, (_, i) => `<i class="${i < joined ? 'done' : ''}"></i>`).join('');
   $('#undo').disabled = history.length === 0;
-  $('#level-label').textContent = `${difficulty.toUpperCase()} / STAGE ${String(levelIndex + 1).padStart(2, '0')}`;
+  $('#level-label').textContent = {easy:'やさしい',normal:'ふつう',hard:'むずかしい'}[difficulty];
+  $('#stage-number').textContent = String(levelIndex + 1).padStart(2, '0');
   $('#stage-title').textContent = names[levelIndex]; $('#board-spec').textContent = `${w} × ${h}`;
   $('#stage-count').textContent = `${String(levelIndex + 1).padStart(2, '0')} / 08`;
   document.querySelectorAll('[data-difficulty]').forEach(b => { b.classList.toggle('active', b.dataset.difficulty === difficulty); b.setAttribute('aria-pressed', String(b.dataset.difficulty === difficulty)); });
   $('#stages').replaceChildren();
-  LEVELS[difficulty].forEach((_, i) => { const b = document.createElement('button'); b.className = 'stage-button'; b.textContent = i + 1; b.classList.toggle('active', i === levelIndex); b.classList.toggle('completed', !!completed[`${difficulty}-${i}`]); b.setAttribute('aria-label', `ステージ${i + 1}${completed[`${difficulty}-${i}`] ? '、クリア済み' : ''}`); b.setAttribute('aria-pressed', String(i === levelIndex)); b.onclick = () => loadLevel(difficulty, i); $('#stages').append(b); });
+  LEVELS[difficulty].forEach((_, i) => { const b = document.createElement('button'); b.className = 'stage-button'; b.textContent = i + 1; b.classList.toggle('active', i === levelIndex); b.classList.toggle('completed', !!completed[`${difficulty}-${i}`]); b.setAttribute('aria-label', `ステージ${i + 1}${completed[`${difficulty}-${i}`] ? '、クリア済み' : ''}`); b.setAttribute('aria-pressed', String(i === levelIndex)); b.onclick = () => { loadLevel(difficulty, i); $('#stages-dialog').close(); }; $('#stages').append(b); });
   document.querySelectorAll('[data-direction]').forEach(b => { b.disabled = selected === null || isComplete(board, w) || !move(board, w, selected, b.dataset.direction); });
 }
 function select(index, focus = false) {
@@ -72,13 +75,13 @@ function perform(direction, source = selected) {
     try { localStorage.setItem('block-gattai-completed', JSON.stringify(completed)); } catch { /* Play remains available when storage is blocked. */ }
     render(); $('#win-detail').textContent = `${history.length} 手で、${board.filter(Boolean).length / 2} 組すべてが合体！`;
     $('#next-level').innerHTML = levelIndex === 7 ? '最初のステージへ <span>↻</span>' : '次のステージへ <span>→</span>';
-    $('#win-panel').hidden = false; $('#next-level').focus({preventScroll:true}); say('クリア！すべてのペアが合体しました'); celebrate();
+    $('#win-panel').hidden = false; setWinInert(true); $('#next-level').focus({preventScroll:true}); say('クリア！すべてのペアが合体しました'); celebrate();
   } else if (!legalMoves(board, width()).length) say('動かせるブロックがないよ。「一手戻す」で別の順番を試そう');
   else say(next.merged ? 'ぴたっ！ 合体したペアは、ここからずっと一緒' : 'いいね。その調子でペアをつなごう');
 }
 function celebrate() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  for (let i = 0; i < 22; i++) { const dot = document.createElement('i'); dot.className = 'confetti'; dot.style.setProperty('--color', PALETTE[i % 5 + 1][0]); dot.style.setProperty('--dx', `${(Math.random() - .5) * 410}px`); dot.style.setProperty('--dy', `${(Math.random() - .5) * 380}px`); dot.style.setProperty('--rotate', `${Math.random() * 720}deg`); $('.game-card').append(dot); setTimeout(() => dot.remove(), 1100); }
+  for (let i = 0; i < 22; i++) { const dot = document.createElement('i'); dot.className = 'confetti'; dot.style.setProperty('--color', PALETTE[i % 5 + 1][0]); dot.style.setProperty('--dx', `${(Math.random() - .5) * 310}px`); dot.style.setProperty('--dy', `${(Math.random() - .5) * 320}px`); dot.style.setProperty('--rotate', `${Math.random() * 720}deg`); $('.game').append(dot); setTimeout(() => dot.remove(), 1100); }
 }
 function undo() { if (!history.length) return; cancelHint(); const previous = history.pop(); board = previous.board; selected = previous.selected; $('#win-panel').hidden = true; render(); say('一手戻したよ。別の道を探してみよう'); }
 let gesture = null, suppressClick = false;
@@ -96,13 +99,17 @@ boardEl.addEventListener('click', e => { const tile = e.target.closest('.tile');
 document.querySelectorAll('[data-direction]').forEach(b => b.onclick = () => perform(b.dataset.direction));
 document.querySelectorAll('[data-difficulty]').forEach(b => b.onclick = () => loadLevel(b.dataset.difficulty, 0));
 document.addEventListener('keydown', e => {
-  if ($('#help-dialog').open || e.altKey || e.ctrlKey || e.metaKey) return;
+  if ($('#help-dialog').open || $('#stages-dialog').open || !$('#win-panel').hidden || e.altKey || e.ctrlKey || e.metaKey) return;
   const direction = {ArrowUp:'up',ArrowRight:'right',ArrowDown:'down',ArrowLeft:'left'}[e.key];
   if (direction && selected !== null) { e.preventDefault(); perform(direction); }
 });
 $('#undo').onclick = undo; $('#reset').onclick = () => loadLevel();
 $('#next-level').onclick = () => loadLevel(difficulty, (levelIndex + 1) % LEVELS[difficulty].length);
-$('#win-close').onclick = () => { $('#win-panel').hidden = true; $('#next-level').blur(); $('#reset').focus({preventScroll:true}); };
+function setWinInert(value) { document.querySelectorAll('.game-header, .hud, .board-area, .direction-pad, .game-controls').forEach(el => { el.inert = value; }); }
+$('#win-close').onclick = () => { $('#win-panel').hidden = true; setWinInert(false); $('#reset').focus({preventScroll:true}); };
+$('#win-panel').addEventListener('keydown', e => { if (e.key === 'Escape') $('#win-close').click(); if(e.key === 'Tab') { e.preventDefault(); (document.activeElement === $('#next-level') ? $('#win-close') : $('#next-level')).focus(); } });
+$('#stages-open').onclick = $('#level-open').onclick = () => $('#stages-dialog').showModal();
+$('#stages-close').onclick = $('#stages-play').onclick = () => $('#stages-dialog').close();
 $('#help-open').onclick = () => $('#help-dialog').showModal();
 $('#help-close').onclick = $('#help-play').onclick = () => $('#help-dialog').close();
 $('#help-dialog').addEventListener('click', e => { if (e.target === $('#help-dialog')) { const r = e.target.getBoundingClientRect(); if(e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) e.target.close(); } });
